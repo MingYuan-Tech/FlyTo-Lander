@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 專案概述
 
-**FlyTo Lander** 是 macOS GPS 模擬工具 [FlyTo](https://github.com/Jaofeng/FlyTo)（Private repo）的 Android 端 helper App。
+**FlyTo Lander** 是 macOS GPS 模擬工具 [FlyTo](https://flyto.mytechs.com.tw/) 的 Android 端 helper App。
 
 ### 角色
 
@@ -86,7 +86,7 @@ app/src/main/
 
 ## 設計約束（Phase 1 開工前硬性 Gate）
 
-[`docs/android-platform.md` §7](docs/android-platform.md#7-安全性與風險揭露phase-1-開工前約束) 為**硬性約束**，違反者視同 bug，需修正後才能 release：
+[`docs/android-platform.md` §4](docs/android-platform.md#4-安全性與風險揭露phase-1-開工前約束) 為**硬性約束**，違反者視同 bug，需修正後才能 release：
 
 1. **零網路權限**：不請求 `INTERNET` / `ACCESS_NETWORK_STATE` 等
 2. **可審計**：完全開源、Reproducible Build、GPG 簽署 release
@@ -95,7 +95,7 @@ app/src/main/
 5. **UI 透明**：MainActivity 顯眼處三段聲明
 6. **使用者文件揭露**：README 5 條風險揭露
 
-每次 PR 必須通過 [§7.8 驗收 checklist 10 條](docs/android-platform.md#78-驗收-checklistphase-1-結束前必須通過)，詳見 [`CONTRIBUTING.md`](CONTRIBUTING.md)。
+每次 PR 必須通過 [§4.8 驗收 checklist 10 條](docs/android-platform.md#48-驗收-checklistphase-1-結束前必須通過)，詳見 [`CONTRIBUTING.md`](CONTRIBUTING.md)。
 
 ## 建置與執行
 
@@ -135,67 +135,29 @@ shasum -a 256 app/build/outputs/apk/debug/app-debug.apk
 
 範例：`[修正] LocationBroadcastReceiver：補上 callerUid 為 ROOT 時的判斷`
 
-## 開發與測試環境
+## 測試
 
-| 類型 | 配置 | 備註 |
-|------|------|------|
-| macOS 開發機 | MacBook Pro 16" (Intel) | 與 FlyTo 主 repo 同一台 |
-| Android 模擬器 | `flyto_pixel6_api29` / `flyto_pixel6_api33` / `flyto_pixel7_api34` | x86_64 ABI（Intel Mac），詳見 [`docs/android-platform.md` §3.3](docs/android-platform.md#33-多版本矩陣建議) |
-| Android 實機 | （尚無） | Phase 3 採購二手 Pixel + Samsung A 系列 |
+Lander 的測試需要 macOS 開發機上的 Android emulator（AVD）或實機。**AVD 設置、adb 操作流程、broadcast 發送 pitfalls 等都不在本 repo 範疇**，詳見 FlyTo 主 repo `docs/android-platform.md`。
 
-### 啟動測試流程
+本 repo 開發者需要的最小資訊：
 
-```bash
-# 1. 啟動 emulator（背景）
-nohup "$ANDROID_HOME/emulator/emulator" -avd flyto_pixel6_api33 -no-snapshot > /tmp/emu.log 2>&1 &
-
-# 2. 等 boot 完成
-"$ANDROID_HOME/platform-tools/adb" wait-for-device
-until [ "$($ANDROID_HOME/platform-tools/adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ]; do sleep 2; done
-
-# 3. install APK
-"$ANDROID_HOME/platform-tools/adb" install -r app/build/outputs/apk/debug/app-debug.apk
-
-# 4. 授權 Mock Location（跳過 GUI 開發者選項）
-"$ANDROID_HOME/platform-tools/adb" shell appops set com.mingyuan.flyto.lander android:mock_location allow
-
-# 5. 啟動 App
-"$ANDROID_HOME/platform-tools/adb" shell am start -n com.mingyuan.flyto.lander/.MainActivity
-
-# 6. 發送 broadcast（必須用 -n + --ed）
-"$ANDROID_HOME/platform-tools/adb" shell am broadcast \
-  -n com.mingyuan.flyto.lander/.LocationBroadcastReceiver \
-  -a com.mingyuan.flyto.lander.SET_LOCATION \
-  --ed lat 25.033964 --ed lng 121.564468
-
-# 7. 看 Logcat
-"$ANDROID_HOME/platform-tools/adb" logcat -d | grep FlyToLander
-
-# 8. 關閉 emulator
-"$ANDROID_HOME/platform-tools/adb" emu kill
-```
-
-### 兩個容易踩的 Pitfall
-
-1. **broadcast 必須用 `-n <component>` 顯式指定 receiver**，否則 Android 8.0+ Background Execution Limits 會 reject 並 log `Background execution not allowed`
-2. **`--ed`（double）vs `--ef`（float）**：座標必須用 `--ed`，否則 `getDoubleExtra` 拿不到（回 NaN）
-
-詳見 [`docs/android-platform.md` §2.3](docs/android-platform.md#23-intent-格式) / [§5.2](docs/android-platform.md#52-模擬位置)。
+- AVD 名稱慣例：`flyto_pixel6_api29` / `flyto_pixel6_api33` / `flyto_pixel7_api34`（由 FlyTo 主 repo 工程師建立）
+- 在 emulator 上跑 Lander：`adb install -r app/build/outputs/apk/debug/app-debug.apk`，然後手動驗證 [`docs/android-platform.md` §4.5](docs/android-platform.md#45-第四層ui-透明in-app-trust-signals) UI 三段聲明顯示正確
 
 ## 跨專案關係
 
-| 配套專案 | URL | 角色 |
-|---------|-----|------|
-| **FlyTo**（macOS App 主 repo，Private） | [`Jaofeng/FlyTo`](https://github.com/Jaofeng/FlyTo) | 桌面端 GPS 模擬工具；Phase 2 在該 repo 實作 `Core/Platform/AndroidPlatform` 對接本 helper |
+| 配套專案 | 角色 |
+|---------|------|
+| **[FlyTo](https://flyto.mytechs.com.tw/)**（macOS App，Private repo） | 桌面端 GPS 模擬工具；負責發送 broadcast 給本 helper |
 
-兩 repo 的 Intent 格式 / Permission 約束 / Background Execution Limits 等規格以 **本 repo `docs/android-platform.md` 為單一真實來源**；macOS 端對應為 §8、§5.2 / §2.3。
+**對外接口契約**（Intent action、extras、Receiver component）由本 repo `docs/android-platform.md` §2 定義；**macOS 端如何發送 broadcast、AVD 設置、`AndroidPlatform` 抽象實作**屬 FlyTo 主 repo 範疇。
 
 ## 文件索引
 
 | 檔案 | 內容 |
 |------|------|
 | [README.md](README.md) | 使用者導覽、安裝步驟、5 條風險揭露 |
-| [docs/android-platform.md](docs/android-platform.md) | **完整設計文件**（11 章、§7 安全約束、§7.8 驗收 checklist、Phase 0/1/2/3/4 路線） |
+| [docs/android-platform.md](docs/android-platform.md) | **本 helper 自身設計**（對外 Intent 接口、§4 安全約束、§4.8 驗收 checklist、Phase 1 已完成狀態） |
 | [SECURITY.md](SECURITY.md) | 資安回報流程 |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | 貢獻流程、commit message 規範、PR §7.8 checklist |
 | [LICENSE](LICENSE) / [NOTICE](NOTICE) | Apache-2.0 |
