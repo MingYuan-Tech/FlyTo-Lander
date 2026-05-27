@@ -36,6 +36,7 @@ Desktop.ini
 # ===== Kotlin =====
 *.class
 hs_err_pid*
+.kotlin/
 
 # ===== Logs =====
 *.log
