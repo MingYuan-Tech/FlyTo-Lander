@@ -3,7 +3,7 @@
 > **本 App 不請求網路權限 / This app requests NO `INTERNET` permission.**
 > Verify in [`app/src/main/AndroidManifest.xml`](app/src/main/AndroidManifest.xml).
 
-FlyTo Lander 是 macOS 工具 **[FlyTo](https://github.com/MingYuan-Tech/FlyTo)** 在 Android 端的 helper App。FlyTo 在 macOS 端模擬 GPS 座標，透過 `adb` 對 Android 裝置發送 broadcast；FlyTo Lander 在裝置上接收 broadcast，呼叫系統 `LocationManager.setTestProviderLocation` 把座標灌入 Android Location 框架，讓裝置上的其他 App 看到模擬後的位置。
+FlyTo Lander 是 macOS 工具 **[FlyTo](https://github.com/Jaofeng/FlyTo)** 在 Android 端的 helper App。FlyTo 在 macOS 端模擬 GPS 座標，透過 `adb` 對 Android 裝置發送 broadcast；FlyTo Lander 在裝置上接收 broadcast，呼叫系統 `LocationManager.setTestProviderLocation` 把座標灌入 Android Location 框架，讓裝置上的其他 App 看到模擬後的位置。
 
 - **套件名稱**：`com.mingyuan.flyto.lander`
 - **散佈方式**：本 repo 的 GitHub Release（**絕不上 Google Play**）
@@ -226,7 +226,7 @@ Copyright 2026 MingYuan Tech Studio.
 
 | 專案 | 說明 |
 |------|------|
-| [FlyTo](https://github.com/MingYuan-Tech/FlyTo) | macOS 端主程式（Private repo，使用者無權限會看到 404） |
+| [FlyTo](https://github.com/Jaofeng/FlyTo) | macOS 端主程式（Private repo，使用者無權限會看到 404） |
 | [Appium io.appium.settings](https://github.com/appium/io.appium.settings) | 業界對照組，相同雙端架構 |
 
 ---

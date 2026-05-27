@@ -1,6 +1,6 @@
 # 貢獻指南
 
-感謝你對 FlyTo Lander 的興趣！本專案是 macOS 工具 [FlyTo](https://github.com/MingYuan-Tech/FlyTo) 的 Android 端 helper App，因為直接觸碰系統 Mock Location 能力，**任何貢獻都必須符合 [docs/android-platform.md §7](https://github.com/MingYuan-Tech/FlyTo) 的安全性與風險揭露約束**（位於 FlyTo 主 repo，Private）。
+感謝你對 FlyTo Lander 的興趣！本專案是 macOS 工具 [FlyTo](https://github.com/Jaofeng/FlyTo) 的 Android 端 helper App，因為直接觸碰系統 Mock Location 能力，**任何貢獻都必須符合 [docs/android-platform.md §7 安全性與風險揭露](docs/android-platform.md#7-安全性與風險揭露phase-1-開工前約束)的約束**。
 
 本文件說明提交貢獻的流程。請在送 PR 前讀完。
 

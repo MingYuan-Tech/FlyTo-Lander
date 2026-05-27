@@ -25,7 +25,7 @@ assignees: ''
 - [ ] 不需要加上 `INTERNET` 或其他網路相關 permission
 - [ ] 不需要引入第三方 SDK（Firebase / Crashlytics / Sentry / analytics 等）
 - [ ] 不需要持久化 GPS 座標或使用者識別資料
-- [ ] 不違背 [docs/android-platform.md §7 安全性與風險揭露](https://github.com/MingYuan-Tech/FlyTo) 的任何條款
+- [ ] 不違背 [docs/android-platform.md §7 安全性與風險揭露](../../docs/android-platform.md#7-安全性與風險揭露phase-1-開工前約束) 的任何條款
 
 > 若你的建議與上述任一條衝突，仍歡迎提出，但請在「你想解決的問題」段落特別說明，以便討論能否找到不違反約束的替代設計。
 
