@@ -8,5 +8,5 @@ contact_links:
     url: https://github.com/MingYuan-Tech/FlyTo-Lander/discussions
     about: 不確定是否為 bug、想討論用法或分享經驗，請改用 Discussions（若已啟用）。
   - name: FlyTo macOS App 相關問題
-    url: https://github.com/MingYuan-Tech/FlyTo
+    url: https://github.com/Jaofeng/FlyTo
     about: 若問題出在 macOS 端（連線失敗、UI 異常等），請到 FlyTo 主 repo 回報。
