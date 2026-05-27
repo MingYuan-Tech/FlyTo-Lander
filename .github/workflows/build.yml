@@ -1,0 +1,77 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Assemble debug APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect Android project
+        id: detect
+        run: |
+          if [ -f "app/build.gradle.kts" ] || [ -f "app/build.gradle" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Android project not yet bootstrapped (no app/build.gradle[.kts]); skipping build."
+          fi
+
+      - name: Set up JDK 17
+        if: steps.detect.outputs.present == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        if: steps.detect.outputs.present == 'true'
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Grant execute permission for gradlew
+        if: steps.detect.outputs.present == 'true' && hashFiles('gradlew') != ''
+        run: chmod +x ./gradlew
+
+      - name: Assemble debug APK
+        if: steps.detect.outputs.present == 'true'
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Compute APK SHA-256
+        if: steps.detect.outputs.present == 'true'
+        id: sha
+        run: |
+          APK=$(find app/build/outputs/apk/debug -name '*.apk' | head -n 1)
+          if [ -z "$APK" ]; then
+            echo "::error::No APK produced under app/build/outputs/apk/debug"
+            exit 1
+          fi
+          SUM=$(sha256sum "$APK" | awk '{print $1}')
+          echo "apk=$APK" >> "$GITHUB_OUTPUT"
+          echo "sha=$SUM" >> "$GITHUB_OUTPUT"
+          {
+            echo "## Debug APK"
+            echo ""
+            echo "- File: \`$APK\`"
+            echo "- SHA-256: \`$SUM\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload APK artifact
+        if: steps.detect.outputs.present == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: flyto-lander-debug-apk
+          path: ${{ steps.sha.outputs.apk }}
+          if-no-files-found: error
+          retention-days: 14

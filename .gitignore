@@ -1,0 +1,72 @@
+# ===== Android / Gradle =====
+.gradle/
+build/
+/build/
+**/build/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# ===== Android Studio / IntelliJ =====
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+.run/
+
+# ===== Local Android SDK settings =====
+local.properties
+
+# ===== macOS / Windows / Linux noise =====
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# ===== VS Code / editor =====
+.vscode/
+*.swp
+*.swo
+*~
+
+# ===== Kotlin =====
+*.class
+hs_err_pid*
+
+# ===== Logs =====
+*.log
+
+# ===== Signing material (NEVER commit) =====
+*.keystore
+*.jks
+key.properties
+keystore.properties
+release.keystore
+release.jks
+upload-keystore.jks
+signing.properties
+
+# ===== Release output =====
+app/release/
+**/release/output-metadata.json
+
+# ===== Coverage / reports =====
+**/build/reports/
+**/build/test-results/
+coverage/
+
+# ===== GPG / SSH leakage guards =====
+*.gpg
+*.asc.priv
+secring.*
+id_rsa
+id_ed25519
+
+# ===== Misc =====
+*.bak
+*.orig
+*.tmp

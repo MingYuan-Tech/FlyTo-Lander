@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- FlyTo Lander 啟動圖示：白色 "L" 字母在綠色背景，呼應飛行降落意象 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M40,32 L40,76 L74,76 L74,68 L48,68 L48,32 Z" />
+</vector>

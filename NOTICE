@@ -1,0 +1,16 @@
+FlyTo Lander
+Copyright 2026 MingYuan Tech Studio
+
+This product includes software developed by MingYuan Tech Studio
+(https://github.com/MingYuan-Tech).
+
+FlyTo Lander is the Android-side helper application of FlyTo, a macOS GPS
+location simulation tool. It receives broadcasts from the FlyTo macOS app
+via adb and feeds simulated coordinates into the Android system through
+LocationManager's Test Provider API.
+
+Licensed under the Apache License, Version 2.0 (the "License"); you may
+not use this file except in compliance with the License. You may obtain
+a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0

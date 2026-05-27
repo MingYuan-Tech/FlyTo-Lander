@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  FlyTo Lander — Android Manifest
+  ==================================================================
+  §7.3 防禦性 Manifest 約束（docs/android-platform.md）：
+    嚴禁宣告下列 permission，違反者視同 bug：
+      android.permission.INTERNET
+      android.permission.ACCESS_NETWORK_STATE
+      android.permission.READ_PHONE_STATE
+      android.permission.READ_EXTERNAL_STORAGE
+      android.permission.WRITE_EXTERNAL_STORAGE
+      android.permission.ACCESS_BACKGROUND_LOCATION
+      android.permission.QUERY_ALL_PACKAGES
+  本 App 不請求網路權限 — 詳見 README 一級橫幅與 §7.3。
+  ==================================================================
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- §6.2 必要 permission（三個） -->
+    <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <application
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.FlyToLander"
+        tools:targetApi="33"
+        xmlns:tools="http://schemas.android.com/tools">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.FlyToLander">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!--
+          §7.4 約束：BroadcastReceiver 必須 exported="true"（要能接 adb shell 來的 broadcast），
+          但在 onReceive() 內檢查 Binder.getCallingUid() == Process.SHELL_UID 限制來源。
+        -->
+        <receiver
+            android:name=".LocationBroadcastReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.mingyuan.flyto.lander.SET_LOCATION" />
+                <action android:name="com.mingyuan.flyto.lander.CLEAR_LOCATION" />
+            </intent-filter>
+        </receiver>
+
+        <!-- 選配：開機後預註冊 Test Provider（§6.1 BootCompletedReceiver） -->
+        <receiver
+            android:name=".BootCompletedReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+    </application>
+
+</manifest>

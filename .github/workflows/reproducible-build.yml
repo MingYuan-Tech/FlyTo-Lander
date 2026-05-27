@@ -1,0 +1,160 @@
+name: Reproducible Build Verification
+
+# 每次 Release 後自動驗證：
+#   1. 在乾淨的 runner 重新 clone 該 release 對應的 commit
+#   2. 重新 build release APK
+#   3. 與 release artifact 的 SHA-256 比對
+#   4. 不一致時自動開 GitHub issue
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to verify (e.g. v1.0.0)'
+        required: true
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  verify:
+    name: Rebuild and compare SHA-256
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Resolve tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            REF="${{ github.event.inputs.tag }}"
+          else
+            REF="${{ github.event.release.tag_name }}"
+          fi
+          echo "name=$REF" >> "$GITHUB_OUTPUT"
+          echo "version=${REF#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout tagged commit (clean clone)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.tag.outputs.name }}
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Decode signing keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::KEYSTORE_BASE64 secret is missing"
+            exit 1
+          fi
+          mkdir -p "$RUNNER_TEMP/signing"
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/signing/release.keystore"
+          echo "RELEASE_KEYSTORE=$RUNNER_TEMP/signing/release.keystore" >> "$GITHUB_ENV"
+
+      - name: Grant execute permission for gradlew
+        if: hashFiles('gradlew') != ''
+        run: chmod +x ./gradlew
+
+      - name: Rebuild release APK
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          ./gradlew assembleRelease --no-daemon --stacktrace \
+            -PRELEASE_STORE_FILE="$RELEASE_KEYSTORE" \
+            -PRELEASE_STORE_PASSWORD="$KEYSTORE_PASSWORD" \
+            -PRELEASE_KEY_ALIAS="$KEY_ALIAS" \
+            -PRELEASE_KEY_PASSWORD="$KEY_PASSWORD"
+
+      - name: Compute rebuilt SHA-256
+        id: rebuilt
+        run: |
+          APK=$(find app/build/outputs/apk/release -name '*.apk' | head -n 1)
+          if [ -z "$APK" ]; then
+            echo "::error::No APK produced under app/build/outputs/apk/release"
+            exit 1
+          fi
+          SUM=$(sha256sum "$APK" | awk '{print $1}')
+          echo "sha=$SUM" >> "$GITHUB_OUTPUT"
+          echo "Rebuilt SHA-256: $SUM"
+
+      - name: Download release SHA-256
+        id: published
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ASSET_NAME="flyto-lander-${{ steps.tag.outputs.version }}.apk.sha256"
+          gh release download "${{ steps.tag.outputs.name }}" \
+            --repo "${{ github.repository }}" \
+            --pattern "$ASSET_NAME" \
+            --output published.sha256
+          PUB_SHA=$(awk '{print $1}' published.sha256)
+          echo "sha=$PUB_SHA" >> "$GITHUB_OUTPUT"
+          echo "Published SHA-256: $PUB_SHA"
+
+      - name: Compare hashes
+        id: compare
+        run: |
+          if [ "${{ steps.rebuilt.outputs.sha }}" = "${{ steps.published.outputs.sha }}" ]; then
+            echo "Reproducible build verification PASSED."
+            echo "match=true" >> "$GITHUB_OUTPUT"
+            {
+              echo "## Reproducible build verification: PASSED"
+              echo ""
+              echo "- Tag: \`${{ steps.tag.outputs.name }}\`"
+              echo "- SHA-256: \`${{ steps.rebuilt.outputs.sha }}\`"
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::error::Reproducible build mismatch for ${{ steps.tag.outputs.name }}"
+            echo "match=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "## Reproducible build verification: FAILED"
+              echo ""
+              echo "- Tag: \`${{ steps.tag.outputs.name }}\`"
+              echo "- Published: \`${{ steps.published.outputs.sha }}\`"
+              echo "- Rebuilt:   \`${{ steps.rebuilt.outputs.sha }}\`"
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+      - name: Open issue on mismatch
+        if: failure() && steps.compare.outputs.match == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue create \
+            --repo "${{ github.repository }}" \
+            --title "Reproducible build mismatch for ${{ steps.tag.outputs.name }}" \
+            --label "security,reproducible-build" \
+            --body "$(cat <<'EOF'
+          Automated reproducible-build verification detected a SHA-256 mismatch
+          for the published release. This indicates either:
+
+          - A non-deterministic input in the build pipeline (timestamp, ordering,
+            absolute paths, environment-dependent metadata)
+          - A signing key drift between release and verification builds
+          - Tampering with the published artifact
+
+          | Item | Value |
+          |------|-------|
+          | Tag | `${{ steps.tag.outputs.name }}` |
+          | Published SHA-256 | `${{ steps.published.outputs.sha }}` |
+          | Rebuilt SHA-256 | `${{ steps.rebuilt.outputs.sha }}` |
+          | Verification run | ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} |
+
+          Please investigate before publishing the next release.
+          EOF
+          )"
