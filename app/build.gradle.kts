@@ -44,6 +44,17 @@ android {
     androidResources {
         generateLocaleConfig = false
     }
+
+    lint {
+        // CI 與本機都必須擋下 lint error，避免再次發生「Phase 1 從未跑過 lint」的盲點
+        abortOnError = true
+        warningsAsErrors = false
+        checkReleaseBuilds = true
+
+        // MockLocation：本 App 的核心存在理由就是 mock location，release build 必須持有
+        // ACCESS_MOCK_LOCATION。這條 lint rule 假設 mock 僅供 test/debug，不適用 Lander。
+        disable += "MockLocation"
+    }
 }
 
 dependencies {
