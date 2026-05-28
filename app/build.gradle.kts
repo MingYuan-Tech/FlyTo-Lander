@@ -16,6 +16,24 @@ android {
         versionName = "0.1.0"
     }
 
+    // signingConfig：CI 透過 -PRELEASE_STORE_FILE 等 properties 注入 keystore；
+    // 本機開發或 secret 未設定時，properties 全為 null，release build 會 unsigned
+    // （unsigned APK 無法 install 但 lint / assemble 仍可跑）。
+    signingConfigs {
+        create("release") {
+            val storePath = project.findProperty("RELEASE_STORE_FILE") as String?
+            val storePass = project.findProperty("RELEASE_STORE_PASSWORD") as String?
+            val keyAliasProp = project.findProperty("RELEASE_KEY_ALIAS") as String?
+            val keyPass = project.findProperty("RELEASE_KEY_PASSWORD") as String?
+            if (storePath != null && storePass != null && keyAliasProp != null && keyPass != null) {
+                storeFile = file(storePath)
+                storePassword = storePass
+                keyAlias = keyAliasProp
+                keyPassword = keyPass
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -23,6 +41,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // 只在 properties 真的提供時才掛 signingConfig，否則留空產出 unsigned APK
+            if (project.findProperty("RELEASE_STORE_FILE") != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 
