@@ -175,15 +175,39 @@ shasum -a 256 flyto-lander-<version>.apk
 
 ### 驗證 GPG 簽章
 
-```bash
-# 匯入工作室公鑰（首次驗證需要）
-gpg --recv-keys <KEY_ID>
+工作室 GPG public key：
 
-# 驗證簽章
-gpg --verify flyto-lander-<version>.apk.asc flyto-lander-<version>.apk
+| 項目 | 值 |
+|------|----|
+| Key ID | `DCD89190E52012AE` |
+| Fingerprint | `2DC1 ED20 2ED5 34C7 9DF0  EF18 DCD8 9190 E520 12AE` |
+| Email | `release@mytechs.com.tw` |
+| Public key 檔案 | [`docs/release-pubkey.asc`](docs/release-pubkey.asc) |
+
+匯入工作室公鑰（首次驗證需要，二擇一）：
+
+```bash
+# 方法 A：從本 repo 的 public key 檔案匯入（推薦，無外部依賴）
+curl -O https://raw.githubusercontent.com/MingYuan-Tech/FlyTo-Lander/main/docs/release-pubkey.asc
+gpg --import release-pubkey.asc
+
+# 方法 B：從公開 keyserver 拉（如已上傳）
+gpg --keyserver keys.openpgp.org --recv-keys DCD89190E52012AE
 ```
 
-> 工作室 GPG public key fingerprint 與 keystore SHA-256 指紋會在首次 release 時公布。
+匯入後**務必**驗證 fingerprint 是否與上方一致（防止假冒同 email 的 key）：
+
+```bash
+gpg --fingerprint DCD89190E52012AE
+# 期望輸出含：2DC1 ED20 2ED5 34C7 9DF0  EF18 DCD8 9190 E520 12AE
+```
+
+fingerprint 正確後驗證簽章：
+
+```bash
+gpg --verify flyto-lander-<version>.apk.asc flyto-lander-<version>.apk
+# 期望輸出含 "Good signature from MingYuan Tech Studio <release@mytechs.com.tw>"
+```
 
 ---
 
