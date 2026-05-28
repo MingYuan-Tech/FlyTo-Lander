@@ -1,12 +1,13 @@
 # FlyTo Lander
 
 > **本 App 不請求網路權限 / This app requests NO `INTERNET` permission.**
+> 
 > Verify in [`app/src/main/AndroidManifest.xml`](app/src/main/AndroidManifest.xml).
 
-FlyTo Lander 是 macOS 工具 **[FlyTo](https://github.com/Jaofeng/FlyTo)** 在 Android 端的 helper App。FlyTo 在 macOS 端模擬 GPS 座標，透過 `adb` 對 Android 裝置發送 broadcast；FlyTo Lander 在裝置上接收 broadcast，呼叫系統 `LocationManager.setTestProviderLocation` 把座標灌入 Android Location 框架，讓裝置上的其他 App 看到模擬後的位置。
+FlyTo Lander 是 macOS 工具 **[FlyTo](https://flyto.mytechs.com.tw/)** 在 Android 端的 helper App。FlyTo 在 macOS 端模擬 GPS 座標，透過 `adb` 對 Android 裝置發送 broadcast；FlyTo Lander 在裝置上接收 broadcast，呼叫系統 `LocationManager.setTestProviderLocation` 把座標灌入 Android Location 框架，讓裝置上的其他 App 看到模擬後的位置。
 
 - **套件名稱**：`com.mingyuan.flyto.lander`
-- **散佈方式**：本 repo 的 GitHub Release（**絕不上 Google Play**）
+- **散佈方式**：本 repo 的 GitHub Release（**不上 Google Play**）
 - **授權**：[Apache-2.0](LICENSE)
 - **零網路、零追蹤、零第三方 SDK**
 
@@ -14,16 +15,24 @@ FlyTo Lander 是 macOS 工具 **[FlyTo](https://github.com/Jaofeng/FlyTo)** 在 
 
 ## 目錄
 
-1. [為什麼需要這個 App](#為什麼需要這個-app)
-2. [安裝步驟](#安裝步驟)
-3. [使用方式](#使用方式)
-4. [移除步驟](#移除步驟)
-5. [風險揭露](#風險揭露)
-6. [驗證 APK 完整性](#驗證-apk-完整性)
-7. [Reproducible Build](#reproducible-build)
-8. [回報資安問題](#回報資安問題)
-9. [授權](#授權)
-10. [相關專案](#相關專案)
+- [FlyTo Lander](#flyto-lander)
+  - [目錄](#目錄)
+  - [為什麼需要這個 App](#為什麼需要這個-app)
+  - [安裝步驟](#安裝步驟)
+  - [使用方式](#使用方式)
+    - [設定模擬座標](#設定模擬座標)
+    - [清除模擬座標](#清除模擬座標)
+    - [查看執行日誌](#查看執行日誌)
+  - [移除步驟](#移除步驟)
+  - [風險揭露](#風險揭露)
+    - [我們做了哪些事降低你的疑慮](#我們做了哪些事降低你的疑慮)
+  - [驗證 APK 完整性](#驗證-apk-完整性)
+    - [驗證 SHA-256](#驗證-sha-256)
+    - [驗證 GPG 簽章](#驗證-gpg-簽章)
+  - [Reproducible Build](#reproducible-build)
+  - [回報資安問題](#回報資安問題)
+  - [授權](#授權)
+  - [相關專案](#相關專案)
 
 ---
 
