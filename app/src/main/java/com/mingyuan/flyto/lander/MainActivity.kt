@@ -184,7 +184,8 @@ private fun StatusCard(authorized: Boolean, lastReceived: ReceiverState.LastRece
             Text("Mock Location 授權：$authText")
 
             if (lastReceived != null) {
-                val timeFmt = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
+                // HH:mm:ss 24h 格式 locale-neutral，用 ROOT 避免 Compose NonObservableLocale lint
+                val timeFmt = SimpleDateFormat("HH:mm:ss", Locale.ROOT)
                 val time = timeFmt.format(Date(lastReceived.timestampMs))
                 Text(
                     text = "最後一次收到的座標：",
