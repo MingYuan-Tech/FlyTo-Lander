@@ -10,14 +10,14 @@
     <string name="claim_open_source_title">程式碼公開</string>
     <string name="claim_open_source_body">github.com/MingYuan-Tech/FlyTo-Lander</string>
 
-    <!-- 即時狀態 -->
+    <!-- 即時狀態（status_section_title 在 UI 兩側加 ── 裝飾，裝飾不入 strings 以利 i18n） -->
     <string name="status_section_title">即時狀態</string>
-    <string name="status_mock_authorized">Mock Location 授權：已授權</string>
-    <string name="status_mock_unauthorized">Mock Location 授權：未授權</string>
+    <string name="status_mock_authorized">Mock Location 授權：✓ 已授權</string>
+    <string name="status_mock_unauthorized">Mock Location 授權：❌ 未授權</string>
     <string name="status_last_location_none">最後一次收到的座標：（尚未收到）</string>
     <string name="status_last_uid_none">最後 broadcast 來源：（尚未收到）</string>
 
     <!-- 引導 -->
     <string name="action_open_developer_options">開啟開發者選項</string>
-    <string name="hint_authorize_steps">設定 → 系統 → 開發者選項 → Select mock location app → 選 FlyTo Lander</string>
+    <string name="hint_authorize_steps">路徑：設定 → 系統 → 開發者選項 → Select mock location app → FlyTo Lander</string>
 </resources>

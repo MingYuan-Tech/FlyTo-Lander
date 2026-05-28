@@ -34,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -101,18 +102,18 @@ private fun LanderApp() {
         // 三段透明聲明（§7.5）
         ClaimCard(
             symbol = "✓",
-            title = "本 App 不請求網路權限",
-            body = "AndroidManifest.xml 可驗證"
+            title = stringResource(R.string.claim_no_internet_title),
+            body = stringResource(R.string.claim_no_internet_body)
         )
         ClaimCard(
             symbol = "✓",
-            title = "本 App 不蒐集任何資料",
-            body = "無 analytics、無 crash report"
+            title = stringResource(R.string.claim_no_data_title),
+            body = stringResource(R.string.claim_no_data_body)
         )
         ClaimCard(
             symbol = "✓",
-            title = "程式碼公開",
-            body = "github.com/MingYuan-Tech/FlyTo-Lander"
+            title = stringResource(R.string.claim_open_source_title),
+            body = stringResource(R.string.claim_open_source_body)
         )
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -130,10 +131,10 @@ private fun LanderApp() {
                 onClick = { openDeveloperOptions(context) },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("開啟開發者選項")
+                Text(stringResource(R.string.action_open_developer_options))
             }
             Text(
-                text = "路徑：設定 → 系統 → 開發者選項 → Select mock location app → FlyTo Lander",
+                text = stringResource(R.string.hint_authorize_steps),
                 fontSize = 11.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -176,12 +177,14 @@ private fun StatusCard(authorized: Boolean, lastReceived: ReceiverState.LastRece
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Text(
-                text = "── 即時狀態 ──",
+                text = "── ${stringResource(R.string.status_section_title)} ──",
                 fontWeight = FontWeight.SemiBold
             )
 
-            val authText = if (authorized) "✓ 已授權" else "❌ 未授權"
-            Text("Mock Location 授權：$authText")
+            Text(stringResource(
+                if (authorized) R.string.status_mock_authorized
+                else R.string.status_mock_unauthorized
+            ))
 
             if (lastReceived != null) {
                 // HH:mm:ss 24h 格式 locale-neutral，用 ROOT 避免 Compose NonObservableLocale lint
@@ -204,8 +207,8 @@ private fun StatusCard(authorized: Boolean, lastReceived: ReceiverState.LastRece
                 }
                 Text("最後 broadcast 來源：$uidLabel", fontSize = 13.sp)
             } else {
-                Text("最後一次收到的座標：（尚未收到）", fontSize = 13.sp)
-                Text("最後 broadcast 來源：（尚未收到）", fontSize = 13.sp)
+                Text(stringResource(R.string.status_last_location_none), fontSize = 13.sp)
+                Text(stringResource(R.string.status_last_uid_none), fontSize = 13.sp)
             }
         }
     }
