@@ -1,6 +1,6 @@
 # 貢獻指南
 
-感謝你對 FlyTo Lander 的興趣！本專案是 macOS 工具 [FlyTo](https://github.com/Jaofeng/FlyTo) 的 Android 端 helper App，因為直接觸碰系統 Mock Location 能力，**任何貢獻都必須符合 [docs/android-platform.md §7 安全性與風險揭露](docs/android-platform.md#7-安全性與風險揭露phase-1-開工前約束)的約束**。
+感謝你對 FlyTo Lander 的興趣！本專案是 macOS 工具 [FlyTo](https://flyto.mytechs.com.tw/) 的 Android 端 helper App，因為直接觸碰系統 Mock Location 能力，**任何貢獻都必須符合 [docs/android-platform.md §7 安全性與風險揭露](docs/android-platform.md#7-安全性與風險揭露phase-1-開工前約束)的約束**。
 
 本文件說明提交貢獻的流程。請在送 PR 前讀完。
 
@@ -8,11 +8,15 @@
 
 ## 目錄
 
-1. [行為準則](#行為準則)
-2. [提交流程](#提交流程)
-3. [分支與 commit message 慣例](#分支與-commit-message-慣例)
-4. [PR 驗收 Checklist](#pr-驗收-checklist)
-5. [安全性問題不走這條路](#安全性問題不走這條路)
+- [貢獻指南](#貢獻指南)
+  - [目錄](#目錄)
+  - [行為準則](#行為準則)
+  - [提交流程](#提交流程)
+  - [分支與 commit message 慣例](#分支與-commit-message-慣例)
+    - [分支命名](#分支命名)
+    - [Commit message 格式](#commit-message-格式)
+  - [PR 驗收 Checklist](#pr-驗收-checklist)
+  - [安全性問題不走這條路](#安全性問題不走這條路)
 
 ---
 
@@ -56,7 +60,7 @@
 
 ### Commit message 格式
 
-沿用 FlyTo 主 repo 的繁體中文慣例：**`[類型]` 開頭** + 一行描述。例：
+沿用 FlyTo 的繁體中文慣例：**`[類型]` 開頭** + 一行描述。例：
 
 ```
 [新增] LocationBroadcastReceiver：解析 lat/lng extras 並呼叫 MockProvider
@@ -86,7 +90,7 @@
 
 ## PR 驗收 Checklist
 
-FlyTo Lander 因為直接持有系統 Mock Location 權限，所有 PR 都必須通過以下 10 條（沿用 FlyTo 主 repo `docs/android-platform.md §7.8`）：
+FlyTo Lander 因為直接持有系統 Mock Location 權限，所有 PR 都必須通過以下 10 條（沿用 FlyTo 規範 `docs/android-platform.md §7.8`）：
 
 - [ ] 1. `AndroidManifest.xml` 不含 `INTERNET` / `ACCESS_NETWORK_STATE`，也不含其他禁止的 permission（`READ_PHONE_STATE` / 外部儲存讀寫 / `ACCESS_BACKGROUND_LOCATION` / `QUERY_ALL_PACKAGES`）
 - [ ] 2. `build.gradle`（含 catalog / dependencies block）不含 Firebase / Crashlytics / Sentry / App Center / 任何 analytics SDK

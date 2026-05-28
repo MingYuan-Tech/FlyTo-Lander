@@ -1,9 +1,6 @@
 # FlyTo Lander 設計文件
 
 > 本文件描述 **FlyTo Lander 自己的設計**（Android 端 helper App）。
->
-> macOS App 端如何使用本 helper（通訊技術選型 why、AVD 測試環境、adb 指令清單、`AndroidPlatform` 抽象對應、broadcast pitfalls 等）詳見 FlyTo macOS 主 repo（Private）內 `docs/android-platform.md`。
->
 > 文件版本：2026-05-27
 
 ---
@@ -47,7 +44,7 @@ Android 9+ 起，`setTestProviderLocation` 必須由「持有 `ACCESS_MOCK_LOCAT
 
 ## 2. 對外接口（Intent 格式）
 
-Lander 對 macOS 端的**唯一接口契約**。任何修改本節都會破壞 macOS 端對接 — 改動前必須同步通知 FlyTo 主 repo。
+Lander 對 macOS 端的**唯一接口契約**。任何修改本節都會破壞 macOS 端對接 — 改動前必須同步通知 macOS 端開發者，並在 macOS 端完成對應修改後才能合併。
 
 ### 2.1 Action
 
@@ -75,8 +72,6 @@ Lander 對 macOS 端的**唯一接口契約**。任何修改本節都會破壞 m
 | `ts` | long | ✗ | timestamp（ms，預設當下） |
 
 `CLEAR_LOCATION` 無 extras。
-
-> macOS 端發送 broadcast 的 adb 指令範例與 pitfalls 詳見 FlyTo 主 repo `docs/android-platform.md`。
 
 ---
 
@@ -124,9 +119,9 @@ app/src/main/
 
 ---
 
-## 4. 安全性與風險揭露（Phase 1 開工前約束）
+## 4. 安全性與風險揭露（開工前約束）
 
-> 本節為 **Phase 1 開工前硬性設計約束**，不是建議。任何 implementation 違反者視同 bug。
+> 本節為 **開工前硬性設計約束**，不是建議。任何 implementation 違反者視同 bug。
 >
 > 動機：Android 系統權限模型較寬鬆（USB Debugging、sideload APK、Mock Location 都可由使用者開啟），FlyTo Lander 直接觸碰這些敏感能力，使用者有合理的安全疑慮。本節以「設計＋文件」化解疑慮，不犧牲功能。
 
