@@ -48,6 +48,19 @@ jobs:
         if: steps.detect.outputs.present == 'true'
         run: ./gradlew assembleDebug --no-daemon --stacktrace
 
+      - name: Lint (debug variant)
+        if: steps.detect.outputs.present == 'true'
+        run: ./gradlew lintDebug --no-daemon --stacktrace
+
+      - name: Upload lint report on failure
+        if: steps.detect.outputs.present == 'true' && failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-report-debug
+          path: app/build/reports/lint-results-debug.*
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Compute APK SHA-256
         if: steps.detect.outputs.present == 'true'
         id: sha
