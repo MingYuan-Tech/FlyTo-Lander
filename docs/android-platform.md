@@ -115,7 +115,7 @@ app/src/main/
 ### 3.4 散佈策略
 
 - 套件名：`com.mingyuan.flyto.lander`
-- APK：本 repo GitHub Release（**絕不上 Google Play**，Google 政策禁止 mock location 類 App）
+- APK：本 repo GitHub Release（**不上 Google Play**，Google 政策禁止 mock location 類 App）
 - 簽章：GPG release tag + APK SHA-256（CI 自動產出，見 `.github/workflows/release.yml`）
 
 ---
@@ -224,7 +224,7 @@ README 必須明確列出：
 
 | 項目 | 影響 | 緩解 |
 |------|------|------|
-| 無實機，廠商客製 ROM 行為未驗證 | MIUI / OneUI / ColorOS 環境的 Mock Location 開關位置與 Test Provider 行為差異 | Phase 3 採購二手實機驗證（macOS 端規劃，見 FlyTo 主 repo 路線） |
+| 無實機，廠商客製 ROM 行為未驗證 | MIUI / OneUI / ColorOS 環境的 Mock Location 開關位置與 Test Provider 行為差異 | Phase 3 採購二手實機驗證 |
 | Mock Location 在 Google Play Protect 風控下可能觸發警示 | 部分強防詐 App（銀行、行動支付）會偵測並拒絕運行 | 文件揭露此為 Mock Location 機制本身限制 |
 | 無法在 Google Play 上架 | Google 政策禁止 mock location 類 App | 計畫內，APK 走 GitHub Release 私下散佈 |
 
