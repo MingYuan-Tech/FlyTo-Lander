@@ -1,5 +1,9 @@
-@file:Suppress("DEPRECATION") // Criteria 在 API 30 deprecated，但 LocationManager.addTestProvider
-// 在 minSdk 29 仍以 int power/accuracy 參數為 API；ProviderProperties 替代品需 API 31+。
+@file:Suppress("DEPRECATION", "WrongConstant")
+// DEPRECATION：Criteria 在 API 30 deprecated，但 LocationManager.addTestProvider 在 minSdk 29
+//   仍以 int power/accuracy 參數為 API；ProviderProperties 替代的 overload 需 API 31+。
+// WrongConstant：lint 認為 power/accuracy 參數應傳 ProviderProperties.* 常數，但那組常數
+//   只能搭配 API 31+ 的 ProviderProperties overload。本檔走的是舊 int overload，
+//   Criteria.POWER_LOW（=1）/ Criteria.ACCURACY_FINE（=1）與 ProviderProperties 對應常數值相同。
 
 package com.mingyuan.flyto.lander
 
