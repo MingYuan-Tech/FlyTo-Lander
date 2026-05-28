@@ -67,6 +67,18 @@ jobs:
         if: hashFiles('gradlew') != ''
         run: chmod +x ./gradlew
 
+      - name: Lint (release variant)
+        run: ./gradlew lintRelease --no-daemon --stacktrace
+
+      - name: Upload lint report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-report-release-verify
+          path: app/build/reports/lint-results-release.*
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Rebuild release APK
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
