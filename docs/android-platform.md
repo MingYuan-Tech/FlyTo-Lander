@@ -93,6 +93,7 @@ Lander 對 macOS 端的**唯一接口契約**。任何修改本節都會破壞 m
 |-----------|------|
 | `android.permission.ACCESS_MOCK_LOCATION` | 註冊 Test Provider（由 Developer Options 控制，不必 runtime request） |
 | `android.permission.ACCESS_FINE_LOCATION` | 部分 OEM ROM 要求 |
+| `android.permission.ACCESS_COARSE_LOCATION` | Android 12+ 起 FINE 必須同時宣告 COARSE，否則使用者授權對話框可能無法授予 FINE。非權限擴張：FINE 本就涵蓋 COARSE 能力 |
 | `android.permission.RECEIVE_BOOT_COMPLETED` | 開機預註冊（選配） |
 
 §4.3 列出**禁止**請求的 permission 黑名單。
@@ -154,7 +155,7 @@ app/src/main/
 | `android.permission.ACCESS_BACKGROUND_LOCATION` | 不需背景讀取真實位置 |
 | `android.permission.QUERY_ALL_PACKAGES` | 不需查詢其他 App |
 
-僅請求 [§3.2](#32-必要-permission) 列出的三個必要 permission。
+僅請求 [§3.2](#32-必要-permission) 列出的四個必要 permission。
 
 > README 一級顯眼處必須有橫幅：「**This app requests NO `INTERNET` permission. Verify in `AndroidManifest.xml`.**」
 

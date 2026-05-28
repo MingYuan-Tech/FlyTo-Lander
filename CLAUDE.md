@@ -90,7 +90,7 @@ app/src/main/
 
 1. **零網路權限**：不請求 `INTERNET` / `ACCESS_NETWORK_STATE` 等
 2. **可審計**：完全開源、Reproducible Build、GPG 簽署 release
-3. **最小權限**：僅 `ACCESS_MOCK_LOCATION` / `ACCESS_FINE_LOCATION` / `RECEIVE_BOOT_COMPLETED`
+3. **最小權限**：僅 `ACCESS_MOCK_LOCATION` / `ACCESS_FINE_LOCATION` / `ACCESS_COARSE_LOCATION`（Android 12+ 要求 FINE 必伴 COARSE）/ `RECEIVE_BOOT_COMPLETED`
 4. **技術硬隔離**：不持久化、零 SDK、Receiver UID 白名單
 5. **UI 透明**：MainActivity 顯眼處三段聲明
 6. **使用者文件揭露**：README 5 條風險揭露

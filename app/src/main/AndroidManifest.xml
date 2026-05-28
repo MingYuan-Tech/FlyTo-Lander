@@ -14,11 +14,15 @@
   本 App 不請求網路權限 — 詳見 README 一級橫幅與 §7.3。
   ==================================================================
 -->
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- §6.2 必要 permission（三個） -->
+    <!-- §6.2 必要 permission（四個） -->
     <uses-permission android:name="android.permission.ACCESS_MOCK_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- Android 12+ 起，宣告 FINE 必須同時宣告 COARSE，否則使用者授權對話框可能無法授予 FINE。
+         此非權限擴張：FINE 本就涵蓋 COARSE 能力，平台只是要 explicit 宣告。 -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
@@ -29,8 +33,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.FlyToLander"
-        tools:targetApi="33"
-        xmlns:tools="http://schemas.android.com/tools">
+        tools:targetApi="33">
 
         <activity
             android:name=".MainActivity"
@@ -46,10 +49,14 @@
         <!--
           §7.4 約束：BroadcastReceiver 必須 exported="true"（要能接 adb shell 來的 broadcast），
           但在 onReceive() 內檢查 Binder.getCallingUid() == Process.SHELL_UID 限制來源。
+          lint ExportedReceiver 提示加 android:permission= 屬性，但 adb shell（uid 2000）
+          沒有 package identity，無法持有 App permission。manifest permission 是 App-to-App
+          機制，對 Lander 不適用 — 安全層由 §4.2 第二層（UID 白名單，程式內檢查）負責。
         -->
         <receiver
             android:name=".LocationBroadcastReceiver"
-            android:exported="true">
+            android:exported="true"
+            tools:ignore="ExportedReceiver">
             <intent-filter>
                 <action android:name="com.mingyuan.flyto.lander.SET_LOCATION" />
                 <action android:name="com.mingyuan.flyto.lander.CLEAR_LOCATION" />
