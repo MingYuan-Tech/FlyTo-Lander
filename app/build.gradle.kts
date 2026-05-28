@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace = "com.mingyuan.flyto.lander"
-    compileSdk = 34
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.mingyuan.flyto.lander"
-        minSdk = 29
-        targetSdk = 34
+        minSdk = 33
+        targetSdk = 35
         versionCode = 1
         versionName = "0.1.0"
     }

@@ -26,7 +26,7 @@ Android 系統設計上，mock location 必須由「持有 `ACCESS_MOCK_LOCATION
 - **UI 框架**：Jetpack Compose（Material 3）
 - **建置工具**：Gradle 8.9 + AGP 8.5.2
 - **JDK**：Android Studio 內建 JBR（OpenJDK 21）
-- **目標系統**：minSdk 29（Android 10）、targetSdk 34（Android 14）、compileSdk 34
+- **目標系統**：minSdk 33（Android 13）、targetSdk 35（Android 15）、compileSdk 36（Android 16）
 - **架構模式**：極簡 — process-scoped singleton + Compose State
 
 ### 編程硬性限制

@@ -213,20 +213,11 @@ private fun StatusCard(authorized: Boolean, lastReceived: ReceiverState.LastRece
 private fun isMockLocationAuthorized(context: Context): Boolean {
     val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as? AppOpsManager ?: return false
     return try {
-        val mode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            appOps.unsafeCheckOpNoThrow(
-                AppOpsManager.OPSTR_MOCK_LOCATION,
-                Process.myUid(),
-                context.packageName
-            )
-        } else {
-            @Suppress("DEPRECATION")
-            appOps.checkOpNoThrow(
-                AppOpsManager.OPSTR_MOCK_LOCATION,
-                Process.myUid(),
-                context.packageName
-            )
-        }
+        val mode = appOps.unsafeCheckOpNoThrow(
+            AppOpsManager.OPSTR_MOCK_LOCATION,
+            Process.myUid(),
+            context.packageName
+        )
         mode == AppOpsManager.MODE_ALLOWED
     } catch (e: Exception) {
         false
