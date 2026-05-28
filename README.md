@@ -235,7 +235,7 @@ Copyright 2026 MingYuan Tech Studio.
 
 | 專案 | 說明 |
 |------|------|
-| [FlyTo](https://github.com/Jaofeng/FlyTo) | macOS 端主程式（Private repo，使用者無權限會看到 404） |
+| [FlyTo](https://flyto.mytechs.com.tw/) | macOS 端主程式 |
 | [Appium io.appium.settings](https://github.com/appium/io.appium.settings) | 業界對照組，相同雙端架構 |
 
 ---

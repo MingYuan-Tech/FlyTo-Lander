@@ -35,10 +35,12 @@ Android 9+ 起，`setTestProviderLocation` 必須由「持有 `ACCESS_MOCK_LOCAT
 
 | 包含 | 不包含 |
 |------|--------|
-| Android helper App 自身的元件設計 | macOS 端如何發送 broadcast（在 FlyTo 主 repo） |
-| 對外 Intent 接口契約 | macOS 端 AVD 設置流程（在 FlyTo 主 repo） |
-| 安全約束（permission 黑名單、開源、零 SDK） | macOS 端 `AndroidPlatform` 抽象實作（在 FlyTo 主 repo） |
-| Phase 1 開工前的硬性 gate | macOS 端 broadcast 發送的 pitfall 細節（在 FlyTo 主 repo） |
+| Android helper App 自身的元件設計 | macOS 端如何發送 broadcast |
+| 對外 Intent 接口契約 | macOS 端 AVD 設置流程 |
+| 安全約束（permission 黑名單、開源、零 SDK） | macOS 端內部實作細節 |
+| Phase 1 開工前的硬性 gate | macOS 端 broadcast 發送的 pitfall 細節 |
+
+> 桌面端相關問題請洽 FlyTo 官方網站 https://flyto.mytechs.com.tw/
 
 ---
 
@@ -244,7 +246,7 @@ README 必須明確列出：
 - [x] README、SECURITY.md、CONTRIBUTING.md、LICENSE、NOTICE
 
 > 首次 commit：[`d8d4cbb`](https://github.com/MingYuan-Tech/FlyTo-Lander/commit/d8d4cbb)（2026-05-27）
-> macOS 端的 Phase 0（環境）/ Phase 2（`AndroidPlatform`）/ Phase 3（實機驗證）/ Phase 4（進階）路線詳見 FlyTo 主 repo `docs/android-platform.md`。
+> 桌面端 Phase 規劃屬桌面端範疇，不收錄於本 repo；相關資訊請洽 FlyTo 官方網站 https://flyto.mytechs.com.tw/。
 
 ### 6.2 Phase 1.1 — lint 體質補完 + Gradle 升級 ✅ 2026-05-28 上午
 

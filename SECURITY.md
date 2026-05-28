@@ -63,7 +63,7 @@ In scope:
 
 Out of scope:
 
-- The FlyTo macOS application (private repository — report there separately)
+- The FlyTo macOS application — see https://flyto.mytechs.com.tw/ for the separate reporting channel
 - Android OS itself (report to Google via the Android Security Bulletin program)
 - `adb` / Android platform-tools (report to Google)
 - Third-party applications that detect or block mock locations (this is expected
