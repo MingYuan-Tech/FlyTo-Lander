@@ -22,6 +22,7 @@ on:
 
 permissions:
   contents: write
+  actions: write  # 允許結尾 step 用 gh workflow run 主動 trigger reproducible-build.yml
 
 jobs:
   release:
@@ -215,3 +216,12 @@ jobs:
             ${{ steps.apk.outputs.path }}
             ${{ steps.apk.outputs.path }}.sha256
             ${{ steps.apk.outputs.path }}.asc
+
+      # GitHub 防 infinite loop 設計禁止 github.token 觸發的 release.published 事件
+      # cascade trigger 其他 workflow。改用主動 dispatch（workflow_dispatch 不受該限制）。
+      - name: Trigger reproducible build verification
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run reproducible-build.yml \
+            -f tag=${{ steps.tag.outputs.name }}
