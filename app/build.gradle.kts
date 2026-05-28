@@ -54,6 +54,13 @@ android {
         // MockLocation：本 App 的核心存在理由就是 mock location，release build 必須持有
         // ACCESS_MOCK_LOCATION。這條 lint rule 假設 mock 僅供 test/debug，不適用 Lander。
         disable += "MockLocation"
+
+        // 工具版本保守策略 explicit 聲明，避免 lint 每次提示「有更新版本」干擾：
+        // - AGP 維持 8.13.2（避開 9.x major bump 的 build script breaking 風險）
+        // - Kotlin 維持 2.2.x（2.3.x 是 2025 末新版，Compose Compiler 對齊待社群驗證）
+        // 升級決策由人類掌握；版本是否該升，應透過定期 review 而非 lint 提醒。
+        disable += "AndroidGradlePluginVersion"
+        disable += "NewerVersionAvailable"
     }
 }
 
