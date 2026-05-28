@@ -230,7 +230,9 @@ README 必須明確列出：
 
 ---
 
-## 6. Phase 1 已完成狀態
+## 6. 歷史 Phase 紀錄
+
+### 6.1 Phase 1 — 雛形 ✅ 2026-05-27
 
 - [x] 建立 [`MingYuan-Tech/FlyTo-Lander`](https://github.com/MingYuan-Tech/FlyTo-Lander) Public repo（Apache-2.0）
 - [x] Android Studio 專案：Kotlin + Compose、minSdk 29、targetSdk 34
@@ -243,6 +245,64 @@ README 必須明確列出：
 
 > 首次 commit：[`d8d4cbb`](https://github.com/MingYuan-Tech/FlyTo-Lander/commit/d8d4cbb)（2026-05-27）
 > macOS 端的 Phase 0（環境）/ Phase 2（`AndroidPlatform`）/ Phase 3（實機驗證）/ Phase 4（進階）路線詳見 FlyTo 主 repo `docs/android-platform.md`。
+
+### 6.2 Phase 1.1 — lint 體質補完 + Gradle 升級 ✅ 2026-05-28 上午
+
+Phase 1 §4.8 第 4 條雖寫 lint pass，但實際 CI 從未跑 lint —— 跑了發現 4 errors。本次補完：
+
+- [x] 4 個既存 lint errors 全修（MockProvider WrongConstant suppress、AndroidManifest 補 COARSE_LOCATION、ExportedReceiver suppress 並註明設計理由）
+- [x] `build.gradle.kts` 加 `lint { abortOnError = true; disable += "MockLocation" }`，未來 lint error 會擋 build
+- [x] CI `build.yml` 加 `lintDebug` step + failure 時上傳報告 artifact
+- [x] Gradle 8.9 → 8.13、AGP 8.5.2 → 8.13.2（對齊 Android Studio 新版內建 AGP）
+- [x] §6.2 必要 permission 從 3 個 → 4 個（加 COARSE_LOCATION）
+
+> 收尾 commit：[`e42a109`](https://github.com/MingYuan-Tech/FlyTo-Lander/commit/e42a109)
+
+### 6.3 Phase 1.2 — Android 13+ 升級 + 工具鏈中庸升級 + lint 全清 + 跨版測試 ✅ 2026-05-28 下午
+
+支援目標從 Android 10+ 收斂為 Android 13+，工具鏈升級至中庸版本（避開 AGP/Kotlin major bump 風險），lint 從 30 warnings + 4 errors 收斂為 1 warning（targetSdk 35 < 36 的保守決策）。
+
+**SDK 升級**：
+- [x] minSdk 29 → 33（Android 10 → Android 13）
+- [x] targetSdk 34 → 35（Android 14 → Android 15；目前最新是 36，刻意保守避開 Android 16 行為變化）
+- [x] compileSdk 34 → 36（編譯期用最新，支援所有新 lint）
+- [x] `mipmap-anydpi-v26/` → `mipmap-anydpi/`（minSdk 33 後 v26 配置限定符不需要）
+- [x] `MainActivity.isMockLocationAuthorized()` 化簡（移除 `SDK_INT >= Q` 條件分支，minSdk 33 後恆真）
+
+**工具鏈中庸升級**（避開 AGP 9.x / Kotlin 2.3.x 的 major bump 風險）：
+- [x] Gradle 8.13 → 8.14.5（patch）
+- [x] Kotlin 2.0.20 → 2.2.20
+- [x] AGP 8.13.2（不動，刻意避開 9.x major）
+- [x] androidx.core:core-ktx 1.13.1 → 1.18.0
+- [x] androidx.lifecycle:lifecycle-runtime-ktx 2.8.5 → 2.10.0
+- [x] androidx.activity:activity-compose 1.9.2 → 1.13.0
+- [x] androidx.compose:compose-bom 2024.09.02 → 2026.05.01
+
+**Lint 全清**（30 warnings + 4 errors → 1 warning）：
+- [x] `strings.xml` 11 條未使用字串改 `stringResource()` 引用（i18n 鋪路，原本 Compose 直寫）
+- [x] 刪 `mipmap-anydpi/ic_launcher_round.xml`（adaptive icon 系統自動衍生 round 變體）
+- [x] `ic_launcher.xml` 補 `<monochrome>` tag（Android 13+ Material You themed icon）
+- [x] AndroidManifest 拿掉 RedundantLabel（activity label 與 application 重複）
+- [x] `MainActivity` `Uri.parse()` → `String.toUri()` KTX
+- [x] `Compose NonObservableLocale`：`SimpleDateFormat` `Locale.getDefault()` → `Locale.ROOT`（HH:mm:ss 24h locale-neutral）
+- [x] `build.gradle.kts` lint disable += `AndroidGradlePluginVersion`、`NewerVersionAvailable`（工具版本保守策略，由人類掌握）
+
+**跨版 emulator 驗證**（API 33 / 34 / 35 / 36）：
+
+| API 33 | API 34 | API 35 | API 36 |
+|--------|--------|--------|--------|
+| Pixel 6 (x86_64) | Pixel 7 (x86_64) | Pixel 6 (x86_64) | Pixel 6 (x86_64) |
+| ✅ UI 正常 | ✅ UI 正常 | ✅ (edge-to-edge fix 後) | ✅ (edge-to-edge fix 後) |
+| ✓ 已授權 | ❌ 未授權 + 引導 | ❌ 未授權 + 引導 | ❌ 未授權 + 引導 |
+| 三段聲明顯示完整 | stringResource 重構驗證通過 | targetSdk 35 edge-to-edge 行為變化 | 同 API 35 |
+
+**API 35+ edge-to-edge 修補**：
+- [x] `LanderApp` Column 加 `.safeDrawingPadding()`，避開 status bar / nav bar / cutout
+
+**新 debug APK SHA-256**：`4615ced104ed719076e2e3a037a78bad3980e943508e45c3479261ef3f6d09c4`
+
+> Phase 1.2 起始 commit：[`6938074`](https://github.com/MingYuan-Tech/FlyTo-Lander/commit/6938074)；
+> 收尾 commit：`e34bdb6`
 
 ---
 
