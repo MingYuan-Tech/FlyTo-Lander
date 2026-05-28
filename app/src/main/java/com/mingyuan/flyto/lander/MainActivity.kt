@@ -217,12 +217,14 @@ private fun StatusCard(authorized: Boolean, lastReceived: ReceiverState.LastRece
 private fun isMockLocationAuthorized(context: Context): Boolean {
     val appOps = context.getSystemService(Context.APP_OPS_SERVICE) as? AppOpsManager ?: return false
     return try {
-        val mode = appOps.unsafeCheckOpNoThrow(
+        // unsafeCheckOpRawNoThrow：取代 API 30 deprecated 的 unsafeCheckOpNoThrow，
+        // 行為等價但回傳的 mode 可能包含 MODE_FOREGROUND（前台可用），都視為已授權。
+        val mode = appOps.unsafeCheckOpRawNoThrow(
             AppOpsManager.OPSTR_MOCK_LOCATION,
             Process.myUid(),
             context.packageName
         )
-        mode == AppOpsManager.MODE_ALLOWED
+        mode == AppOpsManager.MODE_ALLOWED || mode == AppOpsManager.MODE_FOREGROUND
     } catch (e: Exception) {
         false
     }
