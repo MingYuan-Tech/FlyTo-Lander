@@ -1,6 +1,10 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
+    // AGP 9.0+ 內建 Kotlin 支援，不需 'org.jetbrains.kotlin.android' plugin
+    // （see https://issuetracker.google.com/438678642）
     alias(libs.plugins.kotlin.compose)
 }
 
@@ -53,10 +57,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
     buildFeatures {
         compose = true
     }
@@ -83,6 +83,14 @@ android {
         // 升級決策由人類掌握；版本是否該升，應透過定期 review 而非 lint 提醒。
         disable += "AndroidGradlePluginVersion"
         disable += "NewerVersionAvailable"
+    }
+}
+
+// AGP 9 移除 android { kotlinOptions { } } DSL；AGP 9 內建 Kotlin 後 top-level
+// kotlin { } 也不適用，改用通用 KotlinCompile task 配置 jvmTarget
+tasks.withType<KotlinCompile>().configureEach {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_17)
     }
 }
 
