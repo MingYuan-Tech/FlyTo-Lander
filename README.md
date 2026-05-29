@@ -215,6 +215,8 @@ gpg --verify flyto-lander-<version>.apk.asc flyto-lander-<version>.apk
 
 本專案承諾 **任何人從同一個 git commit 重建出的 APK 與 release artifact 具有相同 SHA-256**。
 
+> ⚠️ **Phase 1.5 RC 期間的已知限制**：v0.1.1-rc1 首次跑 reproducible build CI 驗證即發現 SHA-256 mismatch，修補進行中（見 [issue #1](https://github.com/MingYuan-Tech/FlyTo-Lander/issues/1)、Phase 1.6）。在修補完成前，本段承諾屬「目標狀態」而非「已達成狀態」；正式 release（非 `-rc*` tag）會在 reproducible PASS 之後才 cut。
+
 每次 release 的 release note 會記載：
 
 - Git commit hash
