@@ -20,6 +20,11 @@ on:
         description: 'Release tag to verify (e.g. v1.0.0)'
         required: true
 
+env:
+  # 2026-06-02 GHA runner 預設改 Node 24；強制所有 actions 跑 Node 24 環境
+  # 直到 setup-gradle v5 等上游釋出 Node 24 版
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 permissions:
   contents: read
   issues: write

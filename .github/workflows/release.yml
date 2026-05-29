@@ -20,6 +20,11 @@ on:
         description: 'Existing tag to (re)build a release for'
         required: true
 
+env:
+  # 2026-06-02 GHA runner 預設改 Node 24；強制所有 actions 跑 Node 24 環境
+  # 直到 setup-gradle v5 / action-gh-release v3 等上游釋出 Node 24 版
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
+
 permissions:
   contents: write
   actions: write  # 允許結尾 step 用 gh workflow run 主動 trigger reproducible-build.yml
