@@ -33,6 +33,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          # workflow_dispatch 觸發時 github.ref 是 default branch (main)；顯式用 input tag
+          # 才能 checkout 對的 commit，否則 release 內 embed 的 git revision 與
+          # reproducible-build.yml（永遠 checkout tag）不一致
+          ref: ${{ github.event.inputs.tag || github.ref }}
           fetch-depth: 0
 
       - name: Resolve tag
@@ -82,6 +86,32 @@ jobs:
           path: app/build/reports/lint-results-release.*
           if-no-files-found: ignore
           retention-days: 14
+
+      # Phase 1.6: 先 build unsigned APK 作為 reproducible 比對標的。
+      # APK Signing Block 因 apksig 8.x 內部行為而 non-deterministic（已知限制），
+      # 但 build content（classes.dex / resources / textproto 等）完全 deterministic。
+      # reproducible-build.yml 比對 unsigned APK SHA、不比 signed。
+      - name: Build unsigned release APK (reproducible verification target)
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
+
+      - name: Locate unsigned APK
+        id: unsigned
+        run: |
+          APK=$(find app/build/outputs/apk/release -name '*.apk' | head -n 1)
+          if [ -z "$APK" ]; then
+            echo "::error::No unsigned APK produced"
+            exit 1
+          fi
+          DEST="flyto-lander-${{ steps.tag.outputs.version }}-unsigned.apk"
+          cp "$APK" "$DEST"
+          SUM=$(sha256sum "$DEST" | awk '{print $1}')
+          echo "$SUM  $DEST" > "$DEST.sha256"
+          echo "path=$DEST" >> "$GITHUB_OUTPUT"
+          echo "sha=$SUM" >> "$GITHUB_OUTPUT"
+          echo "Unsigned APK SHA-256: $SUM"
+
+      - name: Clean before signed build
+        run: ./gradlew clean --no-daemon
 
       - name: Build signed release APK
         env:
@@ -164,6 +194,8 @@ jobs:
 
           ### Verifying this release
 
+          **Signed APK**（用於實際安裝）：
+
           - APK SHA-256: \`${{ steps.sha.outputs.sha }}\`
           - GPG signature: \`flyto-lander-${{ steps.tag.outputs.version }}.apk.asc\`
           - GPG key ID: \`${GPG_KEY_ID}\`
@@ -173,6 +205,16 @@ jobs:
           gpg --verify flyto-lander-${{ steps.tag.outputs.version }}.apk.asc \\
                        flyto-lander-${{ steps.tag.outputs.version }}.apk
           \`\`\`
+
+          **Unsigned APK**（用於 reproducible build 比對）：
+
+          - Unsigned APK SHA-256: \`${{ steps.unsigned.outputs.sha }}\`
+          - Asset name: \`flyto-lander-${{ steps.tag.outputs.version }}-unsigned.apk\`
+
+          > ℹ️  Signed APK SHA-256 因 APK Signing Block 內 apksig 函式庫 non-deterministic
+          > 行為而每次 build 不同（已知限制）。**Build content 本身（classes.dex、resources
+          > 等）完全 deterministic**，reproducible 驗證請比對 unsigned APK SHA-256，CI 也只
+          > 比對 unsigned。
 
           ### Build environment (for reproducible build verification)
 
@@ -184,18 +226,19 @@ jobs:
           | JDK | \`${{ steps.env.outputs.jdk }}\` |
           | Runner OS | \`ubuntu-latest\` |
 
-          To reproduce locally:
+          To reproduce locally (unsigned APK):
 
           \`\`\`bash
           git clone https://github.com/MingYuan-Tech/FlyTo-Lander.git
           cd FlyTo-Lander
           git checkout ${{ steps.env.outputs.commit }}
-          ./gradlew assembleRelease
-          shasum -a 256 app/build/outputs/apk/release/app-release.apk
+          ./gradlew assembleRelease   # 不傳 -PRELEASE_STORE_FILE → unsigned APK
+          shasum -a 256 app/build/outputs/apk/release/app-release-unsigned.apk
+          # 期望輸出： ${{ steps.unsigned.outputs.sha }}
           \`\`\`
 
-          The SHA-256 above should match. CI verifies this automatically; see
-          \`.github/workflows/reproducible-build.yml\`.
+          上面 SHA-256 應與 release 提供的 unsigned APK 完全一致。CI 自動驗證見
+          \`.github/workflows/reproducible-build.yml\`。
 
           ---
 
@@ -216,6 +259,8 @@ jobs:
             ${{ steps.apk.outputs.path }}
             ${{ steps.apk.outputs.path }}.sha256
             ${{ steps.apk.outputs.path }}.asc
+            ${{ steps.unsigned.outputs.path }}
+            ${{ steps.unsigned.outputs.path }}.sha256
 
       # GitHub 防 infinite loop 設計禁止 github.token 觸發的 release.published 事件
       # cascade trigger 其他 workflow。改用主動 dispatch（workflow_dispatch 不受該限制）。

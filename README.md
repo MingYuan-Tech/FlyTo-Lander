@@ -213,9 +213,16 @@ gpg --verify flyto-lander-<version>.apk.asc flyto-lander-<version>.apk
 
 ## Reproducible Build
 
-本專案承諾 **任何人從同一個 git commit 重建出的 APK 與 release artifact 具有相同 SHA-256**。
+本專案承諾 **build content（classes.dex、resources、assets 等）任何人從同一個 git commit 重建出的 APK 必須產生相同 SHA-256**。
 
-> ⚠️ **Phase 1.5 RC 期間的已知限制**：v0.1.1-rc1 首次跑 reproducible build CI 驗證即發現 SHA-256 mismatch，修補進行中（見 [issue #1](https://github.com/MingYuan-Tech/FlyTo-Lander/issues/1)、Phase 1.6）。在修補完成前，本段承諾屬「目標狀態」而非「已達成狀態」；正式 release（非 `-rc*` tag）會在 reproducible PASS 之後才 cut。
+> ℹ️ **APK Signing Block 已知例外**：APK 的 signing 部分（用工作室 release keystore 簽章）因 [`apksig` 函式庫的內部行為](https://issuetracker.google.com/issues/?q=apksig%20deterministic) 而每次 build 不同（`apksigner` 0.9 也無 RSA 對應 deterministic flag），是業界 known limitation（F-Droid 等 reproducible 專案多年同樣議題）。**Build content 本身（所有 ZIP entry CRC）完全 deterministic、可逐 byte 驗證**。
+
+每次 release 提供兩種 APK，各司其職：
+
+| Asset | 用途 | reproducibility |
+|---|---|---|
+| `flyto-lander-<version>.apk` | 實際安裝、GPG 簽署 | signing block 約 5KB 非確定性；其餘 build content 一致 |
+| `flyto-lander-<version>-unsigned.apk` | reproducible 比對驗證 | **完全 deterministic** |
 
 每次 release 的 release note 會記載：
 
@@ -224,18 +231,20 @@ gpg --verify flyto-lander-<version>.apk.asc flyto-lander-<version>.apk
 - Android Gradle Plugin (AGP) 版本
 - JDK 版本（temurin）
 
-驗證方式：
+### 本機驗證 reproducible build
 
 ```bash
 git clone https://github.com/MingYuan-Tech/FlyTo-Lander.git
 cd FlyTo-Lander
-git checkout <release-commit-hash>
-./gradlew assembleRelease
-shasum -a 256 app/build/outputs/apk/release/app-release.apk
-# 應與 release 提供的 .sha256 完全一致
+git checkout <release-tag>          # 例如 v0.1.1-rc2
+./gradlew assembleRelease           # 不傳 -PRELEASE_STORE_FILE → 自動產 unsigned APK
+shasum -a 256 app/build/outputs/apk/release/app-release-unsigned.apk
+# 期望輸出 = release 頁面 flyto-lander-<version>-unsigned.apk.sha256 的內容
 ```
 
-CI 中亦有 [reproducible-build workflow](.github/workflows/reproducible-build.yml) 自動驗證。
+若 SHA 一致，代表你本機 build 出來的 APK 內容（classes.dex / resources / assets / native libs）與 release 發行的完全相同。發行 APK 真實性由 GPG 簽章驗證（見上方「驗證 GPG 簽章」），不靠 signed APK 的 SHA。
+
+CI 中亦有 [reproducible-build workflow](.github/workflows/reproducible-build.yml) 自動驗證 unsigned APK SHA 一致性，不一致時自動開 issue。
 
 ---
 
