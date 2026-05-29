@@ -12,20 +12,26 @@ android {
         applicationId = "com.mingyuan.flyto.lander"
         minSdk = 33
         targetSdk = 35
-        versionCode = 5
-        versionName = "0.1.1-rc4"
+        versionCode = 6
+        versionName = "0.1.1-rc5"
     }
 
     // signingConfig：CI 透過 -PRELEASE_STORE_FILE 等 properties 注入 keystore；
-    // 本機開發或 secret 未設定時，properties 全為 null，release build 會 unsigned
+    // 本機開發或 secret 未設定時，properties 全為 null/blank，release build 會 unsigned
     // （unsigned APK 無法 install 但 lint / assemble 仍可跑）。
+    //
+    // 用 isNullOrBlank 而非 != null：project.findProperty() 不只讀 -P CLI、
+    // 也讀 ~/.gradle/gradle.properties + ORG_GRADLE_PROJECT_* env var。user
+    // 可能為其他 Android 專案在 ~/.gradle/gradle.properties 全域設過
+    // RELEASE_STORE_FILE、本機 reproducible 驗證時會誤走 signed path → 應視為未設。
     signingConfigs {
         create("release") {
             val storePath = project.findProperty("RELEASE_STORE_FILE") as String?
             val storePass = project.findProperty("RELEASE_STORE_PASSWORD") as String?
             val keyAliasProp = project.findProperty("RELEASE_KEY_ALIAS") as String?
             val keyPass = project.findProperty("RELEASE_KEY_PASSWORD") as String?
-            if (storePath != null && storePass != null && keyAliasProp != null && keyPass != null) {
+            if (!storePath.isNullOrBlank() && !storePass.isNullOrBlank() &&
+                !keyAliasProp.isNullOrBlank() && !keyPass.isNullOrBlank()) {
                 storeFile = file(storePath)
                 storePassword = storePass
                 keyAlias = keyAliasProp
@@ -42,7 +48,8 @@ android {
                 "proguard-rules.pro"
             )
             // 只在 properties 真的提供時才掛 signingConfig，否則留空產出 unsigned APK
-            if (project.findProperty("RELEASE_STORE_FILE") != null) {
+            val storePath = project.findProperty("RELEASE_STORE_FILE") as String?
+            if (!storePath.isNullOrBlank()) {
                 signingConfig = signingConfigs.getByName("release")
             }
         }

@@ -182,11 +182,16 @@ jobs:
             AGP_VERSION=$(grep -RhoE 'agp\s*=\s*"[0-9.]+"' . 2>/dev/null | head -n 1 | grep -oE '[0-9.]+')
           fi
           JDK_VERSION=$(java -version 2>&1 | head -n 1)
+          # workflow_dispatch 觸發時 $GITHUB_SHA 是 default branch HEAD（main）、不是
+          # input tag commit。改用 git rev-parse HEAD 讀 workspace（已被 Checkout
+          # step 正確 ref 到 tag commit）、跟 Checkout 邏輯對齊、避免 release notes
+          # 內 embed commit 跟實際 build 用的 commit drift
+          ACTUAL_COMMIT=$(git rev-parse HEAD)
           {
             echo "gradle=$GRADLE_VERSION"
             echo "agp=${AGP_VERSION:-unknown}"
             echo "jdk=$JDK_VERSION"
-            echo "commit=$GITHUB_SHA"
+            echo "commit=$ACTUAL_COMMIT"
           } >> "$GITHUB_OUTPUT"
 
       - name: Compose release notes

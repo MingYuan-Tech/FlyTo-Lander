@@ -31,7 +31,7 @@ Lander Phase 1.x 全程僅在 Android emulator (AVD) 上跑（API 33 / 34 / 35 /
 
 ## 各項測試的「PASS」定義
 
-詳見 [template.md](template.md) 內每節「期望」段落。最終 exit criteria（見 [phase-progress](../../../README.md#)）：
+詳見 [template.md](template.md) 內每節「期望」段落。最終 exit criteria（見 [phase-progress 紀錄](https://github.com/MingYuan-Tech/FlyTo-Lander/issues?q=label%3Aphase-3)）：
 
 - 至少 3 個廠商 ROM 上 mock 注入成功率 ≥ 95%
 - 5 個常用 App 拿到 mock 座標的清單已記錄

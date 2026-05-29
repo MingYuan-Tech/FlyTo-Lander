@@ -162,9 +162,11 @@ adb -s <serial> logcat -s FlyToLander:V *:S
 
 | 檔案 | 用途 |
 |------|------|
-| `flyto-lander-<version>.apk` | App 本體 |
-| `flyto-lander-<version>.apk.sha256` | APK 的 SHA-256 雜湊值 |
+| `flyto-lander-<version>.apk` | App 本體（實際安裝用、含 GPG 簽署） |
+| `flyto-lander-<version>.apk.sha256` | signed APK 的 SHA-256 雜湊值 |
 | `flyto-lander-<version>.apk.asc` | 工作室 GPG 簽章 |
+| `flyto-lander-<version>-unsigned.apk` | Reproducible build 比對標的（見 [§Reproducible Build](#reproducible-build)）|
+| `flyto-lander-<version>-unsigned.apk.sha256` | unsigned APK 的 SHA-256 雜湊值 |
 
 ### 驗證 SHA-256
 
