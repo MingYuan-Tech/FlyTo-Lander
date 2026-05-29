@@ -306,6 +306,129 @@ Phase 1 §4.8 第 4 條雖寫 lint pass，但實際 CI 從未跑 lint —— 跑
 > Phase 1.2 起始 commit：[`6938074`](https://github.com/MingYuan-Tech/FlyTo-Lander/commit/6938074)；
 > 收尾 commit：`e34bdb6`
 
+### 6.4 Phase 1.3 — Public repo 隔離 + launcher icon 升級 ✅ 2026-05-28 傍晚
+
+User 提出兩條硬性規則並修補相關違規、同時把 launcher icon 從翅膀+pin 草版升級為 `docs/AppLogo.png` 完整版。
+
+**Public repo 隔離修補**（commit `991839c`）：
+- [x] SECURITY.md / README.md / docs/android-platform.md §1.3 + §6 / `.github/ISSUE_TEMPLATE/config.yml` 共 5 處違規修補
+- [x] FlyTo URL 全部指向 https://flyto.mytechs.com.tw/（不再指 GitHub）
+- [x] 嚴禁將桌面端技術 / 資料記錄到本 repo
+
+**Launcher icon 升級**（commit `efad72f`）：
+- [x] `docs/AppLogo.png` 5 個密度 foreground PNG 全換新（mdpi / hdpi / xhdpi / xxhdpi / xxxhdpi）
+- [x] 中途加 Bugdroid 元素評估後因 CC-BY attribution 缺失 + mock location 工具用 Google 商標風險高 + App icon 是高曝光點 → 還原為翅膀+pin 完整版（零商標風險）
+- [x] 3 種 launcher mask（circle / squircle / square）預覽下視覺都 OK
+
+> Phase 1.3 收尾 commit：`efad72f`
+
+### 6.5 Phase 1.4 — CI 體質補完 + AGP 9 升級失敗 revert 🟡 半完成 2026-05-28 傍晚
+
+延續 1.1 / 1.2 / 1.3「體質補完」主題、共 6 commit（含 1 個 revert + 1 個 fix attempt）。AGP 9 升級踩坑後 revert、後續配套 fix 保留。
+
+**G1 工具鏈全升嘗試 → revert**（commit `06cecd7` / `f756da9` / `74a82cc` revert）：
+- [x] AGP 8.13.2 → 9.2.1、Gradle 8.14.5 → 9.4.1（本機 + CI build/lint 全綠）
+- [x] AGP 9 plugin set 變動：kotlin.android plugin 不再需要、改 KotlinCompile DSL
+- [ ] H1 跨版 emulator 測試發現所有 emulator 上 App 啟動 FATAL `ClassNotFoundException MainActivity` — AGP 9「內建 Kotlin」未自動 enable、Kotlin classes 沒 dex 進 APK
+- [x] 時間有限不深入研究 opt-in、revert 回 Phase 1.2 中庸路線（AGP 8.13.2 / Gradle 8.14.5 / kotlin.android plugin / kotlinOptions DSL）
+- [x] 保留 `MainActivity unsafeCheckOpRawNoThrow` 改進（與 AGP 無關）
+
+**G2 release / reproducible workflow 補 lint**（commit `301cd4b`）：
+- [x] Phase 1.1 早上漏修 release-side lint、本次補（跟 build.yml 對齊）
+
+**G3 build.gradle signingConfig wire**（commit `a74197f`）：
+- [x] release.yml 用的 `-PRELEASE_STORE_FILE` 等 properties 沒接上、補上
+- [x] 寬容設計：missing properties 時 build unsigned APK 而非 fail（Phase 1.6 用此設計做 reproducible 比對）
+
+**新 debug APK SHA-256**（revert 後）：`913ca798e610e7e09e36e169f13eb77305825fff0465fac5aa67f73a135a40c9`
+
+> 半完成原因：
+> 1. G1 revert 後 AGP 9 升級暫掛起（要時間研究內建 Kotlin opt-in）
+> 2. G3 cut tag 需 GitHub Actions secrets（8 條 secret 都沒設）、留 Phase 1.5 處理
+>
+> Phase 1.4 收尾 commit：`74a82cc`
+
+### 6.6 Phase 1.5 — Release secret 設定 + 首次 cut release tag ✅ 完成 2026-05-28 晚（reproducible PASS 條件由 Phase 1.6 達成）
+
+引導 user 一步步走完 keystore + GPG + secret + cut tag 全流程、共 8 commit + 1 tag + 1 issue。
+
+**Keystore + GPG + Secrets 設定**：
+- [x] I1 產 release keystore（`~/.flyto-lander-secrets/release.jks`）
+- [x] I2 產工作室 GPG keypair（KEY_ID `DCD89190E52012AE`、`release@mytechs.com.tw`、fingerprint `2DC1ED20...12AE`）
+- [x] I3 設 6 條 GitHub Actions secrets（`KEYSTORE_BASE64` / `KEYSTORE_PASSWORD` / `KEY_ALIAS` / `KEY_PASSWORD` / `GPG_PRIVATE_KEY` / `GPG_PASSPHRASE`）
+- [x] I4 commit `6dc2455`：README「驗證 GPG 簽章」段從 placeholder 改實作版 + `docs/release-pubkey.asc` 入 repo
+
+**第一次 cut tag**（commit `15678e4` / tag `v0.1.1-rc1`）：
+- [x] bump versionCode 1 → 2、versionName 0.1.0 → 0.1.1-rc1
+- [x] release.yml 第一次 fail（keystore 密碼記錯、本機 keytool 也跑不過）
+- [x] 改用 `openssl rand -base64` + 變數 pipeline 重產 keystore 與 3 條密碼 secret → 重 trigger pass → GitHub Release `v0.1.1-rc1` publish 3 artifact（signed APK 22 MB / .sha256 / .asc）
+
+**Cascade trigger 缺口發現**：
+- [ ] reproducible-build.yml 未自動觸發（GitHub `github.token` 防 infinite loop 設計不 cascade trigger）
+- [x] 手動 `gh workflow run` 觸發 → SHA-256 mismatch fail → issue #1 紀錄
+
+**Cascade trigger fix**（commit `8feb865`、隔天 2026-05-29 端到端驗證）：
+- [x] release.yml 結尾加 step 主動 `gh workflow run reproducible-build.yml`
+- [x] org / repo Workflow permissions 改 write 後端到端驗證通過（cascade 真的 dispatch reproducible-build.yml）
+
+> Phase 1.5 收尾：tag `v0.1.1-rc1` + cascade trigger 在 commit `8feb865` 修補完成。reproducible PASS 條件由 Phase 1.6 達成。
+
+### 6.7 Phase 1.6 — Reproducible build best-effort ✅ 2026-05-29（commit `e063163` / tag `v0.1.1-rc2`）
+
+issue #1 真實 root cause 鎖定為 **apksig 函式庫 APK Signing Block 內 ~5KB 非確定性**（非原 hypothesis 的 timestamp / commit drift / signing key drift）。採 F-Droid 同樣 best-effort 路徑、改用 unsigned APK 作為 reproducible 比對標的。
+
+**前置：本機環境對齊 CI**：
+- [x] SDKMAN 裝 temurin 17.0.19-tem（對齊 CI `Java_Temurin-Hotspot_jdk/17.0.19-10`）
+- [x] 為了裝 SDKMAN 順帶 `brew install bash`（macOS 預設 bash 3.2、SDKMAN 要 bash 4+、brew 裝 5.3.9）
+- [x] system Java（`/usr/bin/java` Oracle 1.8）與 Android Studio JBR 21 都不動
+
+**Root cause 鎖定**：
+- [x] 本機跑兩次 unsigned `assembleRelease` → SHA 完全一致 `18e79a8e...`（build pipeline 已 deterministic）
+- [x] 本機跑兩次 signed `assembleRelease` → SHA 不同、差異 5331 bytes 集中於 ZIP central directory 前的 APK Signing Block（兩 APK 同 size、ZIP entry CRC 全一致）
+- [x] `apksigner` 0.9 唯一 deterministic flag 是 `--deterministic-dsa-signing`、無 RSA 對應 flag
+- [x] AGP 8.13.2 內部用 `com.android.tools.build:apksig:8.13.2` 函式庫、無設定可消除
+
+**Best-effort 三件套**（commit `e063163`）：
+- [x] `release.yml`：修 dispatch checkout bug（`ref: ${{ github.event.inputs.tag || github.ref }}`）+ 新增 Build unsigned release APK step + Locate unsigned APK + clean before signed + artifact 多上傳 unsigned APK + .sha256 + release notes 拆 signed/unsigned 兩段
+- [x] `reproducible-build.yml`：移 keystore 相關 step（unsigned 不需 secrets）+ 改 Rebuild unsigned + 比對 unsigned APK SHA + failure 時 issue body 措辭更新
+- [x] `README.md` §Reproducible Build：移 Phase 1.5 RC 期間 callout、重寫為 best-effort（signed vs unsigned APK 用途表 + 本機驗證指令）
+
+**端到端驗證 PASS**（cut `v0.1.1-rc2` commit `ed93185`）：
+
+| Run | 時間 | 結果 |
+|---|---|---|
+| [release.yml 26615776642](https://github.com/MingYuan-Tech/FlyTo-Lander/actions/runs/26615776642) | 4m26s | ✓ publish 5 artifact |
+| [reproducible-build.yml 26615905355](https://github.com/MingYuan-Tech/FlyTo-Lander/actions/runs/26615905355) | 3m44s | ✓ Rebuilt 與 Published byte-by-byte 一致 |
+
+**Unsigned APK SHA-256**（v0.1.1-rc2）：`195217302d37b7dfcf60576103fbab06b7d00ef779fb15ab90b4151a3fb2d997`
+
+> §4.8 #9「CI 驗證 reproducible build」正式達成（best-effort 標準）、issue #1 close 並附完整證據。
+
+### 6.8 Phase 1.6 完成後雜項升級 ✅ 2026-05-29（同日連續）
+
+Phase 1.6 PASS 後當日連續做兩件 GHA Node 24 transition 升級、用 reproducible 機制作為**升級安全網**驗證每次升級不破壞 build content。
+
+**v0.1.1-rc3：GHA actions 升 Node 24 v5**（commit `32b17a2` + `61fc6fb`）：
+- [x] `actions/checkout@v4` → `@v5`（已 Node 24）
+- [x] `actions/setup-java@v4` → `@v5`（已 Node 24）
+- [x] `gradle/actions/setup-gradle@v3` → `@v4`（**v4 仍 Node 20**、upstream v5 未釋出）
+- [x] `actions/upload-artifact@v4` 不動（已 Node 24）
+- [x] `softprops/action-gh-release@v2` 不動（floating tag latest patch 仍 Node 20）
+
+**Unsigned APK SHA-256**（v0.1.1-rc3）：`cb1f0205e1a600fd5c1237297a1bd5ca24cc6ab3fbbf332c3ddda71b166313bf` — reproducible PASS
+
+**v0.1.1-rc4：FORCE_JAVASCRIPT_ACTIONS_TO_NODE24 env workaround**（commit `011a23c`）：
+- [x] 三 workflow workflow-level 加 `env: FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'`（GitHub 官方 workaround）
+- [x] 殘餘 Node 20 actions（`setup-gradle@v4` + `softprops/action-gh-release@v2`）改為「target Node 20 but forced to Node 24」informational note
+- [x] 2026-09-16 Node 20 強制移除時這些 actions 仍跑 Node 24、**不會 fail**
+- [x] 副效益：reproducible-build.yml 跑時間 3m48s（v0.1.1-rc2）→ 1m58s（v0.1.1-rc4）、Node 24 perf gain ~50%
+
+**Unsigned APK SHA-256**（v0.1.1-rc4）：`ea1532369fadc1f4de0586866a2f05ec8c50d900c615949a7448f92eee3f18e8` — reproducible PASS
+
+> 2026-05-29 連續 cut 3 個 rc tag、reproducible 連續 PASS、reproducible 機制完美承擔「升級安全網」角色。
+>
+> Future follow-up：上游 `gradle/actions` v5 / `softprops/action-gh-release` v3 釋出後可拿掉 `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24` env workaround。
+
 ---
 
 ## 7. 參考資料
