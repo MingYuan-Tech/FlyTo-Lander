@@ -149,6 +149,36 @@ jobs:
           echo "$SUM  ${{ steps.apk.outputs.path }}" > "${{ steps.apk.outputs.path }}.sha256"
           echo "sha=$SUM" >> "$GITHUB_OUTPUT"
 
+      # Sidecar JSON：給 FlyTo macOS App 端讀取以判斷 bundled APK 版本與升級時機。
+      # Schema 為 FlyTo macOS 端與 Lander 之間的對外接口契約，定義於
+      # docs/android-platform.md §3.1（單一真實來源）。
+      - name: Generate sidecar JSON
+        id: sidecar
+        run: |
+          # 從 app/build.gradle.kts 抓 versionCode / versionName（與 release APK
+          # 同 build commit 的 source）。容錯：grep 出來會帶尾巴空白與引號，jq 統一處理。
+          VERSION_CODE=$(grep -E '^\s*versionCode\s*=' app/build.gradle.kts \
+            | head -n 1 | grep -oE '[0-9]+' | head -n 1)
+          VERSION_NAME=$(grep -E '^\s*versionName\s*=' app/build.gradle.kts \
+            | head -n 1 | sed -E 's/.*"([^"]+)".*/\1/')
+
+          if [ -z "$VERSION_CODE" ] || [ -z "$VERSION_NAME" ]; then
+            echo "::error::Failed to parse versionCode ($VERSION_CODE) or versionName ($VERSION_NAME) from app/build.gradle.kts"
+            exit 1
+          fi
+
+          DEST="${{ steps.apk.outputs.path }}.json"
+          jq -n \
+            --argjson versionCode "$VERSION_CODE" \
+            --arg versionName "$VERSION_NAME" \
+            --arg sha256 "${{ steps.sha.outputs.sha }}" \
+            '{versionCode: $versionCode, versionName: $versionName, sha256: $sha256}' \
+            > "$DEST"
+
+          echo "Generated sidecar: versionCode=$VERSION_CODE versionName=$VERSION_NAME"
+          cat "$DEST"
+          echo "path=$DEST" >> "$GITHUB_OUTPUT"
+
       - name: Import GPG key
         env:
           GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
@@ -269,6 +299,7 @@ jobs:
             ${{ steps.apk.outputs.path }}
             ${{ steps.apk.outputs.path }}.sha256
             ${{ steps.apk.outputs.path }}.asc
+            ${{ steps.sidecar.outputs.path }}
             ${{ steps.unsigned.outputs.path }}
             ${{ steps.unsigned.outputs.path }}.sha256
 
