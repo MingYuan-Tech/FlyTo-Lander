@@ -12,8 +12,8 @@ android {
         applicationId = "com.mingyuan.flyto.lander"
         minSdk = 33
         targetSdk = 35
-        versionCode = 6
-        versionName = "0.1.1-rc5"
+        versionCode = 7
+        versionName = "0.1.1-rc6"
     }
 
     // signingConfig：CI 透過 -PRELEASE_STORE_FILE 等 properties 注入 keystore；
