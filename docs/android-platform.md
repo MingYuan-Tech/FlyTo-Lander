@@ -120,6 +120,35 @@ app/src/main/
 - APK：本 repo GitHub Release（**不上 Google Play**，Google 政策禁止 mock location 類 App）
 - 簽章：GPG release tag + APK SHA-256（CI 自動產出，見 `.github/workflows/release.yml`）
 
+### 3.5 Sidecar JSON（macOS 端版本偵測接口）
+
+每次 release 連同 `flyto-lander-<version>.apk` 一起發佈 `flyto-lander-<version>.apk.json`，
+供 FlyTo macOS App 端判斷 bundled APK 版本與升級時機。**此 schema 為對外接口契約，
+變更需通報 FlyTo macOS App 端**（與 §2 Intent 格式同等地位）。
+
+**Schema**（v1）：
+
+```json
+{
+  "versionCode": 6,
+  "versionName": "0.1.1-rc5",
+  "sha256": "8be851b8ab0174e6c6b8ee38e7f6d8f8c3ffb426e4cbf18150bcfdbbeefcb7e0"
+}
+```
+
+| 欄位 | 型別 | 必填 | 來源 | 用途 |
+|------|------|------|------|------|
+| `versionCode` | int | ✅ | `app/build.gradle.kts` | macOS 端版本比對（裝置版本 vs bundled 版本） |
+| `versionName` | string | ✅ | `app/build.gradle.kts` | macOS 端 UI / 日誌顯示 |
+| `sha256` | string | ✅ | signed APK SHA-256 | 防竄改驗證（macOS 端 PR 3 auto-download 流程使用） |
+
+由 `.github/workflows/release.yml` 「Generate sidecar JSON」step 自動產生並上傳成 release asset；
+macOS 端 FlyTo 透過 `scripts/dev/update-bundled-lander.sh` 抓取後寫入
+`FlyTo.app/Contents/Resources/Lander.apk.json` bundle 進 App。
+
+**過渡期**（release.yml 升級前的舊版 tag）：FlyTo macOS 端腳本支援 `--version-code` / `--version-name`
+override 手動補上。
+
 ---
 
 ## 4. 安全性與風險揭露（開工前約束）
